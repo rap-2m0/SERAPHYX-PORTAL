@@ -1,152 +1,252 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>SERAPHYX PORTAL</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Portal</title>
   <style>
+    :root {
+      --primary-color: #28a745;
+      --primary-hover: #218838;
+      --secondary-color: #007bff;
+      --secondary-hover: #0056b3;
+      --gray-color: #6c757d;
+      --gray-hover: #5a6268;
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f6f9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
       margin: 0;
-      padding: 0;
+      padding: 16px;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      color: var(--text-color);
     }
 
-    /* Poem-style narrow card */
+    /* Mobile-optimized card layout */
     .card {
-      background: #ffffff;
-      padding: 35px 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      background: var(--card-bg);
+      padding: 30px 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
       text-align: center;
       width: 100%;
-      max-width: 260px;
+      max-width: 360px;
       margin: 0 auto;
     }
 
     h2 {
-      margin-top: 0;
-      color: #333;
-      margin-bottom: 20px;
-      font-size: 20px;
+      margin: 0 0 20px 0;
+      font-size: 22px;
+      font-weight: 700;
     }
 
+    /* Form accessibility & mobile input sizing */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* 16px font size prevents iOS safari from auto-zooming on focus */
     input, button {
       width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      font-size: 15px;
-      border-radius: 6px;
-      box-sizing: border-box;
+      min-height: 48px;
+      font-size: 16px;
+      border-radius: 8px;
       text-align: center;
+      -webkit-appearance: none;
     }
 
     input {
-      border: 1px solid #ccc;
+      border: 1.5px solid #dcdfe6;
       outline: none;
-      transition: border 0.3s;
+      background-color: #fafafa;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
     }
 
     input:focus {
-      border-color: #28a745;
+      border-color: var(--primary-color);
+      background-color: #ffffff;
     }
 
     button {
-      background-color: #28a745;
-      color: white;
+      background-color: var(--primary-color);
+      color: #ffffff;
       border: none;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s;
-      margin-top: 12px;
+      transition: background-color 0.2s ease;
+    }
+
+    button:active {
+      transform: scale(0.99);
     }
 
     button:hover {
-      background-color: #218838;
+      background-color: var(--primary-hover);
     }
 
     .btn-secondary {
-      background-color: #007bff;
+      background-color: var(--secondary-color);
     }
 
     .btn-secondary:hover {
-      background-color: #0056b3;
+      background-color: var(--secondary-hover);
     }
 
     .btn-back {
-      background-color: #6c757d;
-      margin-top: 8px;
+      background-color: var(--gray-color);
+      margin-top: 4px;
     }
 
     .btn-back:hover {
-      background-color: #5a6268;
+      background-color: var(--gray-hover);
     }
 
-    #pinStatus, #formStatus {
-      margin-top: 15px;
+    .toggle-link {
+      display: inline-block;
+      margin-top: 18px;
       font-size: 14px;
-      font-weight: 500;
+      color: var(--secondary-color);
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 6px;
+    }
+
+    .status-msg {
+      margin: 16px 0 0 0;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 20px;
+      word-wrap: break-word;
+    }
+
+    .welcome-text {
+      color: #666;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    /* High contrast focus rings for accessibility navigation */
+    input:focus-visible, button:focus-visible, .toggle-link:focus-visible {
+      outline: 2px solid var(--secondary-color);
+      outline-offset: 2px;
     }
   </style>
 </head>
 <body>
 
-  <!-- STEP 1: PASSCODE SCREEN -->
-  <div class="card" id="pinCard">
-    <h2>Enter Access PIN</h2>
-    <input type="password" id="pinInput" placeholder="Enter PIN">
-    <button onclick="checkPin()">Unlock</button>
-    <p id="pinStatus"></p>
-  </div>
+  <!-- SCREEN 1: AUTH CARD (LOGIN / SIGN UP) -->
+  <main class="card" id="authCard">
+    <h2 id="authTitle">Portal Login</h2>
 
-  <!-- STEP 2: MENU OPTIONS (Registration vs Payment) -->
-  <div class="card" id="menuCard" style="display: none;">
-    <h2>Select Option</h2>
-    <button onclick="openForm('register')">New Customer</button>
-    <button class="btn-secondary" onclick="openForm('payment')">Payment / Renewal</button>
-  </div>
+    <!-- LOGIN FORM -->
+    <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+      <input type="text" id="loginIgn" placeholder="In Game Name" autocomplete="username" required>
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password" required>
+      <button type="submit">Login</button>
+    </form>
 
-  <!-- STEP 3: DYNAMIC FORM SCREEN -->
-  <div class="card" id="formCard" style="display: none;">
-    <h2 id="formTitle">SERAPHYX PORTAL</h2>
+    <!-- SIGN UP FORM (Hidden by default) -->
+    <form id="signupForm" style="display: none;" onsubmit="event.preventDefault(); handleSignup();">
+      <input type="text" id="signupName" placeholder="Name" autocomplete="name" required>
+      <input type="text" id="signupDiscord" placeholder="Discord Name" required>
+      <input type="text" id="signupIgn" placeholder="In Game Name" autocomplete="username" required>
+      <input type="password" id="signupPass" placeholder="Password" autocomplete="new-password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <!-- Toggle Link -->
+    <span class="toggle-link" id="toggleAuthBtn" tabindex="0" role="button" onclick="toggleAuthMode()" onkeydown="if(event.key==='Enter') toggleAuthMode();">Need an account? Sign Up</span>
+
+    <p class="status-msg" id="authStatus" aria-live="polite"></p>
+  </main>
+
+  <!-- SCREEN 2: DASHBOARD MENU -->
+  <main class="card" id="menuCard" style="display: none;">
+    <h2>Dashboard</h2>
+    <p class="welcome-text" id="welcomeMsg">Welcome!</p>
     
-    <input type="text" id="nameInput" placeholder="Enter Name">
-    <input type="text" id="rankInput" placeholder="Enter Rank">
-    <input type="number" id="balInput" placeholder="Enter Balance / Payment Amount">
-    
-    <button onclick="submitForm()" id="submitBtn">Submit</button>
-    <button class="btn-back" onclick="showMenu()">Back</button>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <button type="button" onclick="openPaymentForm()">Payment / Renewal</button>
+      <button type="button" class="btn-back" onclick="handleLogout()">Logout</button>
+    </div>
+  </main>
 
-    <p id="formStatus"></p>
-  </div>
+  <!-- SCREEN 3: PAYMENT & RENEWAL FORM -->
+  <main class="card" id="paymentCard" style="display: none;">
+    <h2>Process Payment</h2>
+    
+    <form onsubmit="event.preventDefault(); submitPayment();">
+      <input type="text" id="targetIgn" placeholder="Target In Game Name" required>
+      <input type="number" id="payAmount" placeholder="Payment Amount" step="any" required>
+      <input type="text" id="payRank" placeholder="Rank (Optional)">
+      
+      <button type="submit">Submit Payment</button>
+      <button type="button" class="btn-back" onclick="showDashboard()">Back</button>
+    </form>
+
+    <p class="status-msg" id="paymentStatus" aria-live="polite"></p>
+  </main>
 
   <script>
-    // PASTE YOUR GOOGLE WEB APP URL HERE
-    const API_URL = "https://script.google.com/macros/s/AKfycbzX1YyC_m000oQL2BNK-Ha05ygKXCJMObtsoWH8YBym0rMzvXwxaeeKk7gU7Ck8fiDs/exec";
-    
-    let verifiedPin = "";
-    let currentMode = ""; // "register" OR "payment"
+    // Paste your Google Web App URL here
+    const API_URL = "https://script.google.com/macros/s/AKfycbzFCxfKWZGBtCwsa0jTaVc3Mua-9MABi7_Lh99l5MJBMpDEVw8mNN1jF2gHgpzheV8f/exec";
 
-    // 1. VERIFY PIN
-    function checkPin() {
-      const pinInput = document.getElementById("pinInput");
-      const pinStatus = document.getElementById("pinStatus");
-      const enteredPin = pinInput.value.trim();
+    let currentAuthMode = "login"; // "login" OR "signup"
+    let loggedInIgn = "";
 
-      if (!enteredPin) {
-        pinStatus.textContent = "Please enter PIN!";
-        pinStatus.style.color = "red";
-        return;
+    // 1. TOGGLE BETWEEN LOGIN AND SIGN UP
+    function toggleAuthMode() {
+      const authTitle = document.getElementById("authTitle");
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const toggleBtn = document.getElementById("toggleAuthBtn");
+      const status = document.getElementById("authStatus");
+
+      status.textContent = "";
+
+      if (currentAuthMode === "login") {
+        currentAuthMode = "signup";
+        authTitle.textContent = "Create Account";
+        loginForm.style.display = "none";
+        signupForm.style.display = "flex";
+        toggleBtn.textContent = "Already have an account? Login";
+      } else {
+        currentAuthMode = "login";
+        authTitle.textContent = "Portal Login";
+        signupForm.style.display = "none";
+        loginForm.style.display = "flex";
+        toggleBtn.textContent = "Need an account? Sign Up";
       }
+    }
 
-      pinStatus.textContent = "Verifying...";
-      pinStatus.style.color = "#555";
+    // 2. HANDLE LOGIN
+    function handleLogin() {
+      const ign = document.getElementById("loginIgn").value.trim();
+      const pass = document.getElementById("loginPass").value.trim();
+      const status = document.getElementById("authStatus");
+
+      if (!ign || !pass) return;
+
+      status.textContent = "Authenticating...";
+      status.style.color = "#555";
 
       const formData = new FormData();
-      formData.append("action", "verify_pin");
-      formData.append("pin", enteredPin);
+      formData.append("action", "login");
+      formData.append("ign", ign);
+      formData.append("password", pass);
 
       fetch(API_URL, {
         method: "POST",
@@ -154,84 +254,43 @@
       })
       .then(res => res.text())
       .then(result => {
-        if (result === "PIN_VALID") {
-          verifiedPin = enteredPin;
-          document.getElementById("pinCard").style.display = "none";
+        if (result === "LOGIN_SUCCESS") {
+          loggedInIgn = ign;
+          document.getElementById("welcomeMsg").textContent = `Welcome, ${loggedInIgn}!`;
+          document.getElementById("authCard").style.display = "none";
           document.getElementById("menuCard").style.display = "block";
+          clearAuthInputs();
         } else {
-          pinStatus.textContent = "Incorrect PIN!";
-          pinStatus.style.color = "red";
-          pinInput.value = "";
+          status.textContent = "Invalid In Game Name or Password!";
+          status.style.color = "#d9534f";
         }
       })
       .catch(err => {
-        pinStatus.textContent = "Error checking PIN.";
-        pinStatus.style.color = "red";
+        status.textContent = "Network error. Try again.";
+        status.style.color = "#d9534f";
         console.error(err);
       });
     }
 
-    // 2. SHOW MENU / FORM SWITCHING
-    function openForm(mode) {
-      currentMode = mode;
-      document.getElementById("menuCard").style.display = "none";
-      document.getElementById("formCard").style.display = "block";
-      document.getElementById("formStatus").textContent = "";
+    // 3. HANDLE SIGN UP
+    function handleSignup() {
+      const name = document.getElementById("signupName").value.trim();
+      const discord = document.getElementById("signupDiscord").value.trim();
+      const ign = document.getElementById("signupIgn").value.trim();
+      const pass = document.getElementById("signupPass").value.trim();
+      const status = document.getElementById("authStatus");
 
-      const title = document.getElementById("formTitle");
-      const balInput = document.getElementById("balInput");
-      const submitBtn = document.getElementById("submitBtn");
+      if (!name || !discord || !ign || !pass) return;
 
-      if (mode === "register") {
-        title.textContent = "User Registration";
-        balInput.placeholder = "Enter Initial Balance";
-        submitBtn.textContent = "Register User";
-      } else {
-        title.textContent = "Payment & Renewal";
-        balInput.placeholder = "Enter Payment Amount";
-        submitBtn.textContent = "Process Payment";
-      }
-    }
-
-    function showMenu() {
-      document.getElementById("formCard").style.display = "none";
-      document.getElementById("menuCard").style.display = "block";
-      clearInputs();
-    }
-
-    function clearInputs() {
-      document.getElementById("nameInput").value = "";
-      document.getElementById("rankInput").value = "";
-      document.getElementById("balInput").value = "";
-    }
-
-    // 3. SUBMIT FORM DATA
-    function submitForm() {
-      const nameInput = document.getElementById("nameInput");
-      const rankInput = document.getElementById("rankInput");
-      const balInput  = document.getElementById("balInput");
-      
-      const nameValue = nameInput.value.trim();
-      const rankValue = rankInput.value.trim();
-      const balValue  = balInput.value.trim();
-      
-      const statusText = document.getElementById("formStatus");
-
-      if (!nameValue || !balValue) {
-        statusText.textContent = "Please fill in Name and Balance!";
-        statusText.style.color = "red";
-        return;
-      }
-
-      statusText.textContent = "Processing...";
-      statusText.style.color = "#555";
+      status.textContent = "Creating account...";
+      status.style.color = "#555";
 
       const formData = new FormData();
-      formData.append("action", currentMode === "register" ? "register_user" : "process_payment");
-      formData.append("pin", verifiedPin);
-      formData.append("name", nameValue);
-      formData.append("rank", rankValue);
-      formData.append("bal", balValue);
+      formData.append("action", "register_user");
+      formData.append("name", name);
+      formData.append("discord", discord);
+      formData.append("ign", ign);
+      formData.append("password", pass);
 
       fetch(API_URL, {
         method: "POST",
@@ -240,33 +299,103 @@
       .then(res => res.text())
       .then(result => {
         if (result === "DUPLICATE_ERROR") {
-          statusText.textContent = "Error: User already exists!";
-          statusText.style.color = "red";
-        } 
-        else if (result === "USER_NOT_FOUND") {
-          statusText.textContent = "Error: User not found! Register first.";
-          statusText.style.color = "red";
-        }
-        else if (result === "REGISTRATION_SUCCESS") {
-          statusText.textContent = "Registered successfully!";
-          statusText.style.color = "green";
-          clearInputs();
-        }
-        else if (result === "PAYMENT_SUCCESS") {
-          statusText.textContent = "Payment added & Expiration extended!";
-          statusText.style.color = "green";
-          clearInputs();
-        }
-        else {
-          statusText.textContent = "Error submitting request.";
-          statusText.style.color = "red";
+          status.textContent = "In Game Name already registered!";
+          status.style.color = "#d9534f";
+        } else if (result === "REGISTRATION_SUCCESS") {
+          status.textContent = "Account created! Redirecting to login...";
+          status.style.color = "var(--primary-color)";
+          clearAuthInputs();
+          setTimeout(() => toggleAuthMode(), 1200);
+        } else {
+          status.textContent = "Registration failed. Try again.";
+          status.style.color = "#d9534f";
         }
       })
       .catch(err => {
-        statusText.textContent = "Network error. Try again.";
-        statusText.style.color = "red";
+        status.textContent = "Network error. Try again.";
+        status.style.color = "#d9534f";
         console.error(err);
       });
+    }
+
+    // 4. SCREEN NAVIGATION
+    function openPaymentForm() {
+      document.getElementById("menuCard").style.display = "none";
+      document.getElementById("paymentCard").style.display = "block";
+      document.getElementById("paymentStatus").textContent = "";
+    }
+
+    function showDashboard() {
+      document.getElementById("paymentCard").style.display = "none";
+      document.getElementById("menuCard").style.display = "block";
+      clearPaymentInputs();
+    }
+
+    function handleLogout() {
+      loggedInIgn = "";
+      document.getElementById("menuCard").style.display = "none";
+      document.getElementById("authCard").style.display = "block";
+      document.getElementById("authStatus").textContent = "";
+      clearAuthInputs();
+    }
+
+    // 5. SUBMIT PAYMENT
+    function submitPayment() {
+      const targetIgn = document.getElementById("targetIgn").value.trim();
+      const amount = document.getElementById("payAmount").value.trim();
+      const rank = document.getElementById("payRank").value.trim();
+      const status = document.getElementById("paymentStatus");
+
+      if (!targetIgn || !amount) return;
+
+      status.textContent = "Processing payment...";
+      status.style.color = "#555";
+
+      const formData = new FormData();
+      formData.append("action", "process_payment");
+      formData.append("ign", targetIgn);
+      formData.append("bal", amount);
+      formData.append("rank", rank);
+
+      fetch(API_URL, {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.text())
+      .then(result => {
+        if (result === "USER_NOT_FOUND") {
+          status.textContent = "Target In Game Name not found!";
+          status.style.color = "#d9534f";
+        } else if (result === "PAYMENT_SUCCESS") {
+          status.textContent = "Payment processed & expiration extended!";
+          status.style.color = "var(--primary-color)";
+          clearPaymentInputs();
+        } else {
+          status.textContent = "Payment processing failed.";
+          status.style.color = "#d9534f";
+        }
+      })
+      .catch(err => {
+        status.textContent = "Network error. Try again.";
+        status.style.color = "#d9534f";
+        console.error(err);
+      });
+    }
+
+    // CLEAR HELPERS
+    function clearAuthInputs() {
+      document.getElementById("loginIgn").value = "";
+      document.getElementById("loginPass").value = "";
+      document.getElementById("signupName").value = "";
+      document.getElementById("signupDiscord").value = "";
+      document.getElementById("signupIgn").value = "";
+      document.getElementById("signupPass").value = "";
+    }
+
+    function clearPaymentInputs() {
+      document.getElementById("targetIgn").value = "";
+      document.getElementById("payAmount").value = "";
+      document.getElementById("payRank").value = "";
     }
   </script>
 
