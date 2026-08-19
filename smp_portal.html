@@ -35,7 +35,7 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
       text-align: center;
       width: 100%;
-      max-width: 360px;
+      max-width: 480px;
       margin: 0 auto;
     }
 
@@ -67,6 +67,7 @@
 
     .btn-admin { background-color: #dc3545; }
     .btn-back { background-color: var(--gray); margin-top: 8px; }
+    .btn-action { background-color: var(--secondary); }
 
     .toggle-link {
       display: inline-block;
@@ -83,6 +84,33 @@
       font-weight: 600;
       min-height: 20px;
     }
+
+    .info-box {
+      text-align: left;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 15px;
+      border: 1px solid #e9ecef;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-weight: 600; color: #495057; }
+    .info-value { color: #212529; }
+
+    .menu-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
   </style>
 </head>
 <body>
@@ -96,11 +124,10 @@
     </div>
   </main>
 
-  <!-- SCREEN 2: PLAYER AUTH (LOGIN / SIGNUP) -->
+  <!-- SCREEN 2: PLAYER AUTH -->
   <main class="card" id="playerAuthCard" style="display: none;">
     <h2 id="playerAuthTitle">Player Login</h2>
 
-    <!-- LOGIN FORM -->
     <form id="playerLoginForm" autocomplete="off" onsubmit="event.preventDefault(); handlePlayerLogin();">
       <input type="text" id="pLoginIgn" placeholder="In Game Name" autocomplete="off" required>
       <input type="password" id="pLoginPass" placeholder="Password" autocomplete="new-password" required>
@@ -108,7 +135,6 @@
       <button type="button" class="btn-back" onclick="showRoleSelection()">Back</button>
     </form>
 
-    <!-- SIGN UP FORM -->
     <form id="playerSignupForm" style="display: none;" autocomplete="off" onsubmit="event.preventDefault(); handlePlayerSignup();">
       <input type="text" id="pSignName" placeholder="Name" autocomplete="off" required>
       <input type="text" id="pSignDiscord" placeholder="Discord Name" autocomplete="off" required>
@@ -122,7 +148,7 @@
     <p class="status-msg" id="playerStatus"></p>
   </main>
 
-  <!-- SCREEN 3: ADMIN AUTH (LOGIN ONLY) -->
+  <!-- SCREEN 3: ADMIN AUTH -->
   <main class="card" id="adminAuthCard" style="display: none;">
     <h2>Admin Login</h2>
 
@@ -136,25 +162,49 @@
     <p class="status-msg" id="adminStatus"></p>
   </main>
 
-  <!-- SCREEN 4: DASHBOARD MENU -->
-  <main class="card" id="dashboardCard" style="display: none;">
-    <h2 id="dashTitle">Welcome</h2>
-    <p id="dashMsg"></p>
+  <!-- SCREEN 4: PLAYER DASHBOARD -->
+  <main class="card" id="playerDashboardCard" style="display: none;">
+    <h2 id="playerDashTitle">Player Profile</h2>
+    <p class="status-msg" id="playerFetchStatus"></p>
+    <div id="playerProfileContent" class="info-box" style="display: none;"></div>
     <button type="button" class="btn-back" onclick="showRoleSelection()">Logout</button>
   </main>
 
+  <!-- SCREEN 5: ADMIN DASHBOARD -->
+  <main class="card" id="adminDashboardCard" style="display: none;">
+    <h2>Admin Control Panel</h2>
+    
+    <!-- ADMIN MAIN MENU BUTTONS -->
+    <div id="adminMenu" class="menu-grid">
+      <button type="button" class="btn-action" onclick="loadAdminView('players')">List of All Players</button>
+      <button type="button" class="btn-action" onclick="loadAdminView('payments')">Payments</button>
+    </div>
+
+    <!-- VIEW CONTAINER FOR CONTENT -->
+    <div id="adminViewContainer" style="display: none;">
+      <h3 id="adminViewTitle" style="margin-top:0;"></h3>
+      <div id="adminDataContent" class="info-box"></div>
+      <button type="button" class="btn-back" onclick="resetAdminView()">Back to Admin Menu</button>
+    </div>
+
+    <button type="button" class="btn-back" id="adminLogoutBtn" onclick="showRoleSelection()">Logout</button>
+  </main>
+
   <script>
-    // Separate API endpoints for Player and Admin spreadsheets
-    const PLAYER_API = "https://script.google.com/macros/s/AKfycbzbhBxtQXovQfI5j4bw3TTwtgaHfo9TdoOviAUpxx63kewex8oOsmYxVpVo-1kxJKN5/exec";
-    const ADMIN_API  = "https://script.google.com/macros/s/AKfycbzkkQZA6JK-9fNrvxRup3UwIgMoSiGbjGrSczmoSQhi5SA4DWvGlucBKv5n3w0-X4_Z/exec";
+    // Updated Web App Endpoints
+    const PLAYER_API = "https://script.google.com/macros/s/AKfycbwmtbQbJVdhtPEfKF9QK3MwDPi6MMuXP1KMdMMnravv5e9WYGQFhzCIGwpaLRXBc4O-/exec";
+    const ADMIN_API  = "https://script.google.com/macros/s/AKfycbyZbINVf7xSp_rBYrWJfP_w6oVh8lYTIV57P-Qqh1Hacse_ghRnZSugWt8WG7WbqX9n/exec";
 
     let playerMode = "login";
+    let currentUserIgn = "";
 
     function showRoleSelection() {
       document.getElementById("roleSelectCard").style.display = "block";
       document.getElementById("playerAuthCard").style.display = "none";
       document.getElementById("adminAuthCard").style.display = "none";
-      document.getElementById("dashboardCard").style.display = "none";
+      document.getElementById("playerDashboardCard").style.display = "none";
+      document.getElementById("adminDashboardCard").style.display = "none";
+      currentUserIgn = "";
       clearAllInputs();
     }
 
@@ -194,6 +244,7 @@
       }
     }
 
+    // --- PLAYER AUTH & PROFILE FETCH ---
     function handlePlayerLogin() {
       const ign = document.getElementById("pLoginIgn").value.trim();
       const pass = document.getElementById("pLoginPass").value.trim();
@@ -204,7 +255,8 @@
       
       sendReq(PLAYER_API, { action: "player_login", ign: ign, password: pass }, (res) => {
         if (res === "LOGIN_SUCCESS") {
-          openDashboard("Player Dashboard", `Welcome, Player ${ign}!`);
+          currentUserIgn = ign;
+          openPlayerDashboard();
         } else {
           status.textContent = "Invalid Credentials!";
           status.style.color = "#d9534f";
@@ -234,6 +286,46 @@
       });
     }
 
+    function openPlayerDashboard() {
+      document.getElementById("playerAuthCard").style.display = "none";
+      document.getElementById("playerDashboardCard").style.display = "block";
+      
+      const fetchStatus = document.getElementById("playerFetchStatus");
+      const profileBox = document.getElementById("playerProfileContent");
+      fetchStatus.textContent = "Loading your profile...";
+      fetchStatus.style.color = "#555";
+      profileBox.style.display = "none";
+
+      sendReq(PLAYER_API, { action: "get_player_info", ign: currentUserIgn }, (res) => {
+        try {
+          const data = JSON.parse(res);
+          if (data.error) {
+            fetchStatus.textContent = "Profile information not found.";
+            fetchStatus.style.color = "#d9534f";
+            return;
+          }
+
+          fetchStatus.textContent = "";
+          let html = "";
+          for (let key in data) {
+            if (key.toLowerCase() !== "password") { // Hide password field
+              html += `
+                <div class="info-row">
+                  <span class="info-label">${key}</span>
+                  <span class="info-value">${data[key]}</span>
+                </div>`;
+            }
+          }
+          profileBox.innerHTML = html;
+          profileBox.style.display = "block";
+        } catch (e) {
+          fetchStatus.textContent = "Error parsing profile data.";
+          fetchStatus.style.color = "#d9534f";
+        }
+      });
+    }
+
+    // --- ADMIN AUTH & VIEWS ---
     function handleAdminLogin() {
       const ign = document.getElementById("aLoginIgn").value.trim();
       const pass = document.getElementById("aLoginPass").value.trim();
@@ -242,10 +334,11 @@
       status.textContent = "Authenticating Admin...";
       status.style.color = "#555";
 
-      // Sends request to ADMIN_API
       sendReq(ADMIN_API, { action: "admin_login", ign: ign, password: pass }, (res) => {
         if (res === "LOGIN_SUCCESS") {
-          openDashboard("Admin Control Panel", `Welcome, Admin ${ign}!`);
+          document.getElementById("adminAuthCard").style.display = "none";
+          document.getElementById("adminDashboardCard").style.display = "block";
+          resetAdminView();
         } else {
           status.textContent = "Access Denied!";
           status.style.color = "#d9534f";
@@ -253,15 +346,65 @@
       });
     }
 
-    function openDashboard(title, msg) {
-      document.getElementById("playerAuthCard").style.display = "none";
-      document.getElementById("adminAuthCard").style.display = "none";
-      document.getElementById("dashboardCard").style.display = "block";
-      document.getElementById("dashTitle").textContent = title;
-      document.getElementById("dashMsg").textContent = msg;
-      clearAllInputs();
+    function resetAdminView() {
+      document.getElementById("adminMenu").style.display = "flex";
+      document.getElementById("adminViewContainer").style.display = "none";
+      document.getElementById("adminLogoutBtn").style.display = "block";
     }
 
+    function loadAdminView(viewType) {
+      document.getElementById("adminMenu").style.display = "none";
+      document.getElementById("adminLogoutBtn").style.display = "none";
+      
+      const container = document.getElementById("adminViewContainer");
+      const title = document.getElementById("adminViewTitle");
+      const content = document.getElementById("adminDataContent");
+      
+      container.style.display = "block";
+      content.textContent = "Loading data...";
+
+      if (viewType === "players") {
+        title.textContent = "List of All Players";
+        sendReq(ADMIN_API, { action: "get_all_players" }, (res) => {
+          renderTableData(content, res);
+        });
+      } else if (viewType === "payments") {
+        title.textContent = "Payments Overview";
+        sendReq(ADMIN_API, { action: "get_all_payments" }, (res) => {
+          renderTableData(content, res);
+        });
+      }
+    }
+
+    function renderTableData(element, jsonResponse) {
+      try {
+        const list = JSON.parse(jsonResponse);
+        if (!Array.isArray(list) || list.length === 0) {
+          element.textContent = "No records found.";
+          return;
+        }
+
+        let html = "";
+        list.forEach((item, index) => {
+          html += `<div style="margin-bottom:8px; font-weight:bold; color: var(--secondary);">Record #${index + 1}</div>`;
+          for (let k in item) {
+            if (k.toLowerCase() !== "password") {
+              html += `
+                <div class="info-row">
+                  <span class="info-label">${k}</span>
+                  <span class="info-value">${item[k]}</span>
+                </div>`;
+            }
+          }
+          html += `<hr style="border:0; border-top:1px dashed #ccc; margin:12px 0;">`;
+        });
+        element.innerHTML = html;
+      } catch (e) {
+        element.textContent = "Error rendering response data.";
+      }
+    }
+
+    // --- UTILS ---
     function sendReq(targetUrl, params, callback) {
       const payload = new URLSearchParams();
       for (let key in params) payload.append(key, params[key]);
