@@ -6,31 +6,26 @@
   <title>User Portal</title>
   <style>
     :root {
-      --primary-color: #28a745;
-      --primary-hover: #218838;
-      --secondary-color: #007bff;
-      --secondary-hover: #0056b3;
-      --gray-color: #6c757d;
-      --gray-hover: #5a6268;
-      --bg-color: #f4f6f9;
+      --primary: #28a745;
+      --secondary: #007bff;
+      --gray: #6c757d;
+      --bg: #f4f6f9;
       --card-bg: #ffffff;
-      --text-color: #333333;
+      --text: #333333;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-color);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
       margin: 0;
       padding: 16px;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      color: var(--text-color);
+      color: var(--text);
     }
 
     .card {
@@ -44,17 +39,9 @@
       margin: 0 auto;
     }
 
-    h2 {
-      margin: 0 0 20px 0;
-      font-size: 22px;
-      font-weight: 700;
-    }
+    h2 { margin: 0 0 20px 0; font-size: 22px; font-weight: 700; }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    form { display: flex; flex-direction: column; gap: 12px; }
 
     input, button {
       width: 100%;
@@ -62,63 +49,32 @@
       font-size: 16px;
       border-radius: 8px;
       text-align: center;
-      -webkit-appearance: none;
     }
 
     input {
       border: 1.5px solid #dcdfe6;
       outline: none;
       background-color: #fafafa;
-      transition: border-color 0.2s ease, background-color 0.2s ease;
-    }
-
-    input:focus {
-      border-color: var(--primary-color);
-      background-color: #ffffff;
     }
 
     button {
-      background-color: var(--primary-color);
+      background-color: var(--primary);
       color: #ffffff;
       border: none;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s ease;
     }
 
-    button:active {
-      transform: scale(0.99);
-    }
-
-    button:hover {
-      background-color: var(--primary-hover);
-    }
-
-    .btn-secondary {
-      background-color: var(--secondary-color);
-    }
-
-    .btn-secondary:hover {
-      background-color: var(--secondary-hover);
-    }
-
-    .btn-back {
-      background-color: var(--gray-color);
-      margin-top: 4px;
-    }
-
-    .btn-back:hover {
-      background-color: var(--gray-hover);
-    }
+    .btn-admin { background-color: #dc3545; }
+    .btn-back { background-color: var(--gray); margin-top: 8px; }
 
     .toggle-link {
       display: inline-block;
-      margin-top: 18px;
+      margin-top: 16px;
       font-size: 14px;
-      color: var(--secondary-color);
+      color: var(--secondary);
       cursor: pointer;
       text-decoration: underline;
-      padding: 6px;
     }
 
     .status-msg {
@@ -126,296 +82,200 @@
       font-size: 14px;
       font-weight: 600;
       min-height: 20px;
-      word-wrap: break-word;
-    }
-
-    .welcome-text {
-      color: #666;
-      font-size: 15px;
-      margin-bottom: 20px;
-    }
-
-    input:focus-visible, button:focus-visible, .toggle-link:focus-visible {
-      outline: 2px solid var(--secondary-color);
-      outline-offset: 2px;
     }
   </style>
 </head>
 <body>
 
-  <!-- SCREEN 1: AUTH CARD (LOGIN / SIGN UP) -->
-  <main class="card" id="authCard">
-    <h2 id="authTitle">Portal Login</h2>
-
-    <!-- LOGIN FORM -->
-    <form id="loginForm" autocomplete="off" onsubmit="event.preventDefault(); handleLogin();">
-      <input type="text" id="loginIgn" placeholder="In Game Name" autocomplete="off" required>
-      <input type="password" id="loginPass" placeholder="Password" autocomplete="new-password" required>
-      <button type="submit">Login</button>
-    </form>
-
-    <!-- SIGN UP FORM (Hidden by default) -->
-    <form id="signupForm" style="display: none;" autocomplete="off" onsubmit="event.preventDefault(); handleSignup();">
-      <input type="text" id="signupName" placeholder="Name" autocomplete="off" required>
-      <input type="text" id="signupDiscord" placeholder="Discord Name" autocomplete="off" required>
-      <input type="text" id="signupIgn" placeholder="In Game Name" autocomplete="off" required>
-      <input type="password" id="signupPass" placeholder="Password" autocomplete="new-password" required>
-      <button type="submit">Sign Up</button>
-    </form>
-
-    <!-- Toggle Link -->
-    <span class="toggle-link" id="toggleAuthBtn" tabindex="0" role="button" onclick="toggleAuthMode()" onkeydown="if(event.key==='Enter') toggleAuthMode();">Need an account? Sign Up</span>
-
-    <p class="status-msg" id="authStatus" aria-live="polite"></p>
-  </main>
-
-  <!-- SCREEN 2: DASHBOARD MENU -->
-  <main class="card" id="menuCard" style="display: none;">
-    <h2>Dashboard</h2>
-    <p class="welcome-text" id="welcomeMsg">Welcome!</p>
-    
+  <!-- SCREEN 1: SELECT PORTAL MODE -->
+  <main class="card" id="roleSelectCard">
+    <h2>Select Portal</h2>
     <div style="display: flex; flex-direction: column; gap: 12px;">
-      <button type="button" onclick="openPaymentForm()">Payment / Renewal</button>
-      <button type="button" class="btn-back" onclick="handleLogout()">Logout</button>
+      <button type="button" onclick="openPlayerPortal()">Player Portal</button>
+      <button type="button" class="btn-admin" onclick="openAdminPortal()">Admin Portal</button>
     </div>
   </main>
 
-  <!-- SCREEN 3: PAYMENT & RENEWAL FORM -->
-  <main class="card" id="paymentCard" style="display: none;">
-    <h2>Process Payment</h2>
-    
-    <form autocomplete="off" onsubmit="event.preventDefault(); submitPayment();">
-      <input type="text" id="targetIgn" placeholder="Target In Game Name" autocomplete="off" required>
-      <input type="number" id="payAmount" placeholder="Payment Amount" step="any" required>
-      <input type="text" id="payRank" placeholder="Rank (Optional)" autocomplete="off">
-      
-      <button type="submit">Submit Payment</button>
-      <button type="button" class="btn-back" onclick="showDashboard()">Back</button>
+  <!-- SCREEN 2: PLAYER AUTH (LOGIN / SIGNUP) -->
+  <main class="card" id="playerAuthCard" style="display: none;">
+    <h2 id="playerAuthTitle">Player Login</h2>
+
+    <!-- LOGIN FORM -->
+    <form id="playerLoginForm" autocomplete="off" onsubmit="event.preventDefault(); handlePlayerLogin();">
+      <input type="text" id="pLoginIgn" placeholder="In Game Name" autocomplete="off" required>
+      <input type="password" id="pLoginPass" placeholder="Password" autocomplete="new-password" required>
+      <button type="submit">Login</button>
+      <button type="button" class="btn-back" onclick="showRoleSelection()">Back</button>
     </form>
 
-    <p class="status-msg" id="paymentStatus" aria-live="polite"></p>
+    <!-- SIGN UP FORM -->
+    <form id="playerSignupForm" style="display: none;" autocomplete="off" onsubmit="event.preventDefault(); handlePlayerSignup();">
+      <input type="text" id="pSignName" placeholder="Name" autocomplete="off" required>
+      <input type="text" id="pSignDiscord" placeholder="Discord Name" autocomplete="off" required>
+      <input type="text" id="pSignIgn" placeholder="In Game Name" autocomplete="off" required>
+      <input type="password" id="pSignPass" placeholder="Password" autocomplete="new-password" required>
+      <button type="submit">Sign Up</button>
+      <button type="button" class="btn-back" onclick="showRoleSelection()">Back</button>
+    </form>
+
+    <span class="toggle-link" id="togglePlayerAuthBtn" onclick="togglePlayerAuth()">Need an account? Sign Up</span>
+    <p class="status-msg" id="playerStatus"></p>
+  </main>
+
+  <!-- SCREEN 3: ADMIN AUTH (LOGIN ONLY) -->
+  <main class="card" id="adminAuthCard" style="display: none;">
+    <h2>Admin Login</h2>
+
+    <form id="adminLoginForm" autocomplete="off" onsubmit="event.preventDefault(); handleAdminLogin();">
+      <input type="text" id="aLoginIgn" placeholder="Admin In Game Name" autocomplete="off" required>
+      <input type="password" id="aLoginPass" placeholder="Password" autocomplete="new-password" required>
+      <button type="submit" class="btn-admin">Admin Login</button>
+      <button type="button" class="btn-back" onclick="showRoleSelection()">Back</button>
+    </form>
+
+    <p class="status-msg" id="adminStatus"></p>
+  </main>
+
+  <!-- SCREEN 4: DASHBOARD MENU -->
+  <main class="card" id="dashboardCard" style="display: none;">
+    <h2 id="dashTitle">Welcome</h2>
+    <p id="dashMsg"></p>
+    <button type="button" class="btn-back" onclick="showRoleSelection()">Logout</button>
   </main>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzRm30iKsWjRxemUauYekBzWl2TLkHeFNvBTRS-1VuMLIt0gGKykjERWfEZyqHKHGIq/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzbhBxtQXovQfI5j4bw3TTwtgaHfo9TdoOviAUpxx63kewex8oOsmYxVpVo-1kxJKN5/exec";
 
-    let currentAuthMode = "login";
-    let loggedInIgn = "";
+    let playerMode = "login";
 
-    // Clear all forms immediately when the page loads
-    window.addEventListener("DOMContentLoaded", () => {
-      clearAuthInputs();
-      clearPaymentInputs();
-    });
+    function showRoleSelection() {
+      document.getElementById("roleSelectCard").style.display = "block";
+      document.getElementById("playerAuthCard").style.display = "none";
+      document.getElementById("adminAuthCard").style.display = "none";
+      document.getElementById("dashboardCard").style.display = "none";
+      clearAllInputs();
+    }
 
-    // 1. TOGGLE BETWEEN LOGIN AND SIGN UP
-    function toggleAuthMode() {
-      const authTitle = document.getElementById("authTitle");
-      const loginForm = document.getElementById("loginForm");
-      const signupForm = document.getElementById("signupForm");
-      const toggleBtn = document.getElementById("toggleAuthBtn");
-      const status = document.getElementById("authStatus");
+    function openPlayerPortal() {
+      document.getElementById("roleSelectCard").style.display = "none";
+      document.getElementById("playerAuthCard").style.display = "block";
+      document.getElementById("playerStatus").textContent = "";
+    }
 
-      status.textContent = "";
-      clearAuthInputs(); // Force wipe inputs on mode switch
+    function openAdminPortal() {
+      document.getElementById("roleSelectCard").style.display = "none";
+      document.getElementById("adminAuthCard").style.display = "block";
+      document.getElementById("adminStatus").textContent = "";
+    }
 
-      if (currentAuthMode === "login") {
-        currentAuthMode = "signup";
-        authTitle.textContent = "Create Account";
+    function togglePlayerAuth() {
+      const title = document.getElementById("playerAuthTitle");
+      const loginForm = document.getElementById("playerLoginForm");
+      const signupForm = document.getElementById("playerSignupForm");
+      const toggleBtn = document.getElementById("togglePlayerAuthBtn");
+
+      document.getElementById("playerStatus").textContent = "";
+      clearAllInputs();
+
+      if (playerMode === "login") {
+        playerMode = "signup";
+        title.textContent = "Player Sign Up";
         loginForm.style.display = "none";
         signupForm.style.display = "flex";
         toggleBtn.textContent = "Already have an account? Login";
       } else {
-        currentAuthMode = "login";
-        authTitle.textContent = "Portal Login";
+        playerMode = "login";
+        title.textContent = "Player Login";
         signupForm.style.display = "none";
         loginForm.style.display = "flex";
         toggleBtn.textContent = "Need an account? Sign Up";
       }
     }
 
-    // 2. HANDLE LOGIN
-    function handleLogin() {
-      const ign = document.getElementById("loginIgn").value.trim();
-      const pass = document.getElementById("loginPass").value.trim();
-      const status = document.getElementById("authStatus");
-
-      if (!ign || !pass) return;
+    function handlePlayerLogin() {
+      const ign = document.getElementById("pLoginIgn").value.trim();
+      const pass = document.getElementById("pLoginPass").value.trim();
+      const status = document.getElementById("playerStatus");
 
       status.textContent = "Authenticating...";
       status.style.color = "#555";
-
-      const payload = new URLSearchParams();
-      payload.append("action", "login");
-      payload.append("ign", ign);
-      payload.append("password", pass);
-
-      fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: payload
-      })
-      .then(res => res.text())
-      .then(result => {
-        if (result.trim() === "LOGIN_SUCCESS") {
-          loggedInIgn = ign;
-          document.getElementById("welcomeMsg").textContent = `Welcome, ${loggedInIgn}!`;
-          document.getElementById("authCard").style.display = "none";
-          document.getElementById("menuCard").style.display = "block";
-          clearAuthInputs();
+      
+      sendReq({ action: "player_login", ign: ign, password: pass }, (res) => {
+        if (res === "LOGIN_SUCCESS") {
+          openDashboard("Player Dashboard", `Welcome, Player ${ign}!`);
         } else {
-          status.textContent = "Invalid In Game Name or Password!";
+          status.textContent = "Invalid Credentials!";
           status.style.color = "#d9534f";
         }
-      })
-      .catch(err => {
-        status.textContent = "Network error. Try again.";
-        status.style.color = "#d9534f";
-        console.error(err);
       });
     }
 
-    // 3. HANDLE SIGN UP
-    function handleSignup() {
-      const name = document.getElementById("signupName").value.trim();
-      const discord = document.getElementById("signupDiscord").value.trim();
-      const ign = document.getElementById("signupIgn").value.trim();
-      const pass = document.getElementById("signupPass").value.trim();
-      const status = document.getElementById("authStatus");
+    function handlePlayerSignup() {
+      const name = document.getElementById("pSignName").value.trim();
+      const discord = document.getElementById("pSignDiscord").value.trim();
+      const ign = document.getElementById("pSignIgn").value.trim();
+      const pass = document.getElementById("pSignPass").value.trim();
+      const status = document.getElementById("playerStatus");
 
-      if (!name || !discord || !ign || !pass) return;
-
-      status.textContent = "Creating account...";
+      status.textContent = "Registering...";
       status.style.color = "#555";
 
-      const payload = new URLSearchParams();
-      payload.append("action", "register_user");
-      payload.append("name", name);
-      payload.append("discord", discord);
-      payload.append("ign", ign);
-      payload.append("password", pass);
-
-      fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: payload
-      })
-      .then(res => res.text())
-      .then(result => {
-        if (result.trim() === "DUPLICATE_ERROR") {
-          status.textContent = "In Game Name already registered!";
+      sendReq({ action: "player_signup", name: name, discord: discord, ign: ign, password: pass }, (res) => {
+        if (res === "DUPLICATE_ERROR") {
+          status.textContent = "IGN already registered!";
           status.style.color = "#d9534f";
-        } else if (result.trim() === "REGISTRATION_SUCCESS") {
-          status.textContent = "Account created! Redirecting to login...";
-          status.style.color = "var(--primary-color)";
-          
-          // Clear inputs completely before switching to login
-          clearAuthInputs();
-
-          setTimeout(() => {
-            toggleAuthMode();
-            clearAuthInputs(); // Secondary clear after mode switch
-          }, 1200);
-        } else {
-          status.textContent = "Registration failed. Try again.";
-          status.style.color = "#d9534f";
+        } else if (res === "REGISTRATION_SUCCESS") {
+          status.textContent = "Success! Redirecting to login...";
+          status.style.color = "var(--primary)";
+          setTimeout(() => togglePlayerAuth(), 1200);
         }
-      })
-      .catch(err => {
-        status.textContent = "Network error. Try again.";
-        status.style.color = "#d9534f";
-        console.error(err);
       });
     }
 
-    // 4. NAVIGATION
-    function openPaymentForm() {
-      document.getElementById("menuCard").style.display = "none";
-      document.getElementById("paymentCard").style.display = "block";
-      document.getElementById("paymentStatus").textContent = "";
-    }
+    function handleAdminLogin() {
+      const ign = document.getElementById("aLoginIgn").value.trim();
+      const pass = document.getElementById("aLoginPass").value.trim();
+      const status = document.getElementById("adminStatus");
 
-    function showDashboard() {
-      document.getElementById("paymentCard").style.display = "none";
-      document.getElementById("menuCard").style.display = "block";
-      clearPaymentInputs();
-    }
-
-    function handleLogout() {
-      loggedInIgn = "";
-      document.getElementById("menuCard").style.display = "none";
-      document.getElementById("authCard").style.display = "block";
-      document.getElementById("authStatus").textContent = "";
-      clearAuthInputs();
-    }
-
-    // 5. SUBMIT PAYMENT
-    function submitPayment() {
-      const targetIgn = document.getElementById("targetIgn").value.trim();
-      const amount = document.getElementById("payAmount").value.trim();
-      const rank = document.getElementById("payRank").value.trim();
-      const status = document.getElementById("paymentStatus");
-
-      if (!targetIgn || !amount) return;
-
-      status.textContent = "Processing payment...";
+      status.textContent = "Authenticating Admin...";
       status.style.color = "#555";
 
+      sendReq({ action: "admin_login", ign: ign, password: pass }, (res) => {
+        if (res === "LOGIN_SUCCESS") {
+          openDashboard("Admin Control Panel", `Welcome, Admin ${ign}!`);
+        } else {
+          status.textContent = "Access Denied!";
+          status.style.color = "#d9534f";
+        }
+      });
+    }
+
+    function openDashboard(title, msg) {
+      document.getElementById("playerAuthCard").style.display = "none";
+      document.getElementById("adminAuthCard").style.display = "none";
+      document.getElementById("dashboardCard").style.display = "block";
+      document.getElementById("dashTitle").textContent = title;
+      document.getElementById("dashMsg").textContent = msg;
+      clearAllInputs();
+    }
+
+    function sendReq(params, callback) {
       const payload = new URLSearchParams();
-      payload.append("action", "process_payment");
-      payload.append("ign", targetIgn);
-      payload.append("bal", amount);
-      payload.append("rank", rank);
+      for (let key in params) payload.append(key, params[key]);
 
       fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: payload
       })
-      .then(res => res.text())
-      .then(result => {
-        if (result.trim() === "USER_NOT_FOUND") {
-          status.textContent = "Target In Game Name not found!";
-          status.style.color = "#d9534f";
-        } else if (result.trim() === "PAYMENT_SUCCESS") {
-          status.textContent = "Payment processed & expiration extended!";
-          status.style.color = "var(--primary-color)";
-          clearPaymentInputs();
-        } else {
-          status.textContent = "Payment processing failed.";
-          status.style.color = "#d9534f";
-        }
-      })
-      .catch(err => {
-        status.textContent = "Network error. Try again.";
-        status.style.color = "#d9534f";
-        console.error(err);
-      });
+      .then(r => r.text())
+      .then(txt => callback(txt.trim()))
+      .catch(err => console.error(err));
     }
 
-    // CLEAR HELPERS
-    function clearAuthInputs() {
-      const ids = ["loginIgn", "loginPass", "signupName", "signupDiscord", "signupIgn", "signupPass"];
-      ids.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-          input.value = "";
-          input.setAttribute("value", "");
-        }
-      });
-    }
-
-    function clearPaymentInputs() {
-      const ids = ["targetIgn", "payAmount", "payRank"];
-      ids.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-          input.value = "";
-          input.setAttribute("value", "");
-        }
-      });
+    function clearAllInputs() {
+      document.querySelectorAll("input").forEach(i => i.value = "");
     }
   </script>
-
 </body>
 </html>
