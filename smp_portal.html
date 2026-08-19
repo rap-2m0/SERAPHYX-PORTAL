@@ -144,7 +144,9 @@
   </main>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzbhBxtQXovQfI5j4bw3TTwtgaHfo9TdoOviAUpxx63kewex8oOsmYxVpVo-1kxJKN5/exec";
+    // Separate API endpoints for Player and Admin spreadsheets
+    const PLAYER_API = "https://script.google.com/macros/s/AKfycbzbhBxtQXovQfI5j4bw3TTwtgaHfo9TdoOviAUpxx63kewex8oOsmYxVpVo-1kxJKN5/exec";
+    const ADMIN_API  = "https://script.google.com/macros/s/AKfycbzkkQZA6JK-9fNrvxRup3UwIgMoSiGbjGrSczmoSQhi5SA4DWvGlucBKv5n3w0-X4_Z/exec";
 
     let playerMode = "login";
 
@@ -200,7 +202,7 @@
       status.textContent = "Authenticating...";
       status.style.color = "#555";
       
-      sendReq({ action: "player_login", ign: ign, password: pass }, (res) => {
+      sendReq(PLAYER_API, { action: "player_login", ign: ign, password: pass }, (res) => {
         if (res === "LOGIN_SUCCESS") {
           openDashboard("Player Dashboard", `Welcome, Player ${ign}!`);
         } else {
@@ -220,7 +222,7 @@
       status.textContent = "Registering...";
       status.style.color = "#555";
 
-      sendReq({ action: "player_signup", name: name, discord: discord, ign: ign, password: pass }, (res) => {
+      sendReq(PLAYER_API, { action: "player_signup", name: name, discord: discord, ign: ign, password: pass }, (res) => {
         if (res === "DUPLICATE_ERROR") {
           status.textContent = "IGN already registered!";
           status.style.color = "#d9534f";
@@ -240,7 +242,8 @@
       status.textContent = "Authenticating Admin...";
       status.style.color = "#555";
 
-      sendReq({ action: "admin_login", ign: ign, password: pass }, (res) => {
+      // Sends request to ADMIN_API
+      sendReq(ADMIN_API, { action: "admin_login", ign: ign, password: pass }, (res) => {
         if (res === "LOGIN_SUCCESS") {
           openDashboard("Admin Control Panel", `Welcome, Admin ${ign}!`);
         } else {
@@ -259,11 +262,11 @@
       clearAllInputs();
     }
 
-    function sendReq(params, callback) {
+    function sendReq(targetUrl, params, callback) {
       const payload = new URLSearchParams();
       for (let key in params) payload.append(key, params[key]);
 
-      fetch(API_URL, {
+      fetch(targetUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: payload
