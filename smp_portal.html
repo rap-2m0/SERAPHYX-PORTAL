@@ -190,238 +190,252 @@
     <button type="button" class="btn-back" id="adminLogoutBtn" onclick="showRoleSelection()">Logout</button>
   </main>
 
+
   <script>
-    // Updated Web App Endpoints
-    const PLAYER_API = "https://script.google.com/macros/s/AKfycbwmtbQbJVdhtPEfKF9QK3MwDPi6MMuXP1KMdMMnravv5e9WYGQFhzCIGwpaLRXBc4O-/exec";
-    const ADMIN_API  = "https://script.google.com/macros/s/AKfycbyZbINVf7xSp_rBYrWJfP_w6oVh8lYTIV57P-Qqh1Hacse_ghRnZSugWt8WG7WbqX9n/exec";
+  // Updated Web App Endpoints
+  const PLAYER_API = "https://script.google.com/macros/s/AKfycbwmtbQbJVdhtPEfKF9QK3MwDPi6MMuXP1KMdMMnravv5e9WYGQFhzCIGwpaLRXBc4O-/exec";
+  const ADMIN_API  = "https://script.google.com/macros/s/AKfycbyZbINVf7xSp_rBYrWJfP_w6oVh8lYTIV57P-Qqh1Hacse_ghRnZSugWt8WG7WbqX9n/exec";
 
-    let playerMode = "login";
-    let currentUserIgn = "";
+  let playerMode = "login";
+  let currentUserIgn = "";
 
-    function showRoleSelection() {
-      document.getElementById("roleSelectCard").style.display = "block";
-      document.getElementById("playerAuthCard").style.display = "none";
-      document.getElementById("adminAuthCard").style.display = "none";
-      document.getElementById("playerDashboardCard").style.display = "none";
-      document.getElementById("adminDashboardCard").style.display = "none";
-      currentUserIgn = "";
-      clearAllInputs();
+  function showRoleSelection() {
+    document.getElementById("roleSelectCard").style.display = "block";
+    document.getElementById("playerAuthCard").style.display = "none";
+    document.getElementById("adminAuthCard").style.display = "none";
+    document.getElementById("playerDashboardCard").style.display = "none";
+    document.getElementById("adminDashboardCard").style.display = "none";
+    currentUserIgn = "";
+    clearAllInputs();
+  }
+
+  function openPlayerPortal() {
+    document.getElementById("roleSelectCard").style.display = "none";
+    document.getElementById("playerAuthCard").style.display = "block";
+    document.getElementById("playerStatus").textContent = "";
+  }
+
+  function openAdminPortal() {
+    document.getElementById("roleSelectCard").style.display = "none";
+    document.getElementById("adminAuthCard").style.display = "block";
+    document.getElementById("adminStatus").textContent = "";
+  }
+
+  function togglePlayerAuth() {
+    const title = document.getElementById("playerAuthTitle");
+    const loginForm = document.getElementById("playerLoginForm");
+    const signupForm = document.getElementById("playerSignupForm");
+    const toggleBtn = document.getElementById("togglePlayerAuthBtn");
+
+    document.getElementById("playerStatus").textContent = "";
+    clearAllInputs();
+
+    if (playerMode === "login") {
+      playerMode = "signup";
+      title.textContent = "Player Sign Up";
+      loginForm.style.display = "none";
+      signupForm.style.display = "flex";
+      toggleBtn.textContent = "Already have an account? Login";
+    } else {
+      playerMode = "login";
+      title.textContent = "Player Login";
+      signupForm.style.display = "none";
+      loginForm.style.display = "flex";
+      toggleBtn.textContent = "Need an account? Sign Up";
     }
+  }
 
-    function openPlayerPortal() {
-      document.getElementById("roleSelectCard").style.display = "none";
-      document.getElementById("playerAuthCard").style.display = "block";
-      document.getElementById("playerStatus").textContent = "";
-    }
+  // --- PLAYER AUTH & PROFILE FETCH ---
+  function handlePlayerLogin() {
+    const ign = document.getElementById("pLoginIgn").value.trim();
+    const pass = document.getElementById("pLoginPass").value.trim();
+    const status = document.getElementById("playerStatus");
 
-    function openAdminPortal() {
-      document.getElementById("roleSelectCard").style.display = "none";
-      document.getElementById("adminAuthCard").style.display = "block";
-      document.getElementById("adminStatus").textContent = "";
-    }
-
-    function togglePlayerAuth() {
-      const title = document.getElementById("playerAuthTitle");
-      const loginForm = document.getElementById("playerLoginForm");
-      const signupForm = document.getElementById("playerSignupForm");
-      const toggleBtn = document.getElementById("togglePlayerAuthBtn");
-
-      document.getElementById("playerStatus").textContent = "";
-      clearAllInputs();
-
-      if (playerMode === "login") {
-        playerMode = "signup";
-        title.textContent = "Player Sign Up";
-        loginForm.style.display = "none";
-        signupForm.style.display = "flex";
-        toggleBtn.textContent = "Already have an account? Login";
+    status.textContent = "Authenticating...";
+    status.style.color = "#555";
+    
+    sendReq(PLAYER_API, { action: "player_login", ign: ign, password: pass }, (res) => {
+      console.log("Player Login Response:", res);
+      if (res === "LOGIN_SUCCESS") {
+        currentUserIgn = ign;
+        openPlayerDashboard();
       } else {
-        playerMode = "login";
-        title.textContent = "Player Login";
-        signupForm.style.display = "none";
-        loginForm.style.display = "flex";
-        toggleBtn.textContent = "Need an account? Sign Up";
+        status.textContent = "Invalid Credentials! (Response: " + res + ")";
+        status.style.color = "#d9534f";
       }
-    }
+    });
+  }
 
-    // --- PLAYER AUTH & PROFILE FETCH ---
-    function handlePlayerLogin() {
-      const ign = document.getElementById("pLoginIgn").value.trim();
-      const pass = document.getElementById("pLoginPass").value.trim();
-      const status = document.getElementById("playerStatus");
+  function handlePlayerSignup() {
+    const name = document.getElementById("pSignName").value.trim();
+    const discord = document.getElementById("pSignDiscord").value.trim();
+    const ign = document.getElementById("pSignIgn").value.trim();
+    const pass = document.getElementById("pSignPass").value.trim();
+    const status = document.getElementById("playerStatus");
 
-      status.textContent = "Authenticating...";
-      status.style.color = "#555";
-      
-      sendReq(PLAYER_API, { action: "player_login", ign: ign, password: pass }, (res) => {
-        if (res === "LOGIN_SUCCESS") {
-          currentUserIgn = ign;
-          openPlayerDashboard();
-        } else {
-          status.textContent = "Invalid Credentials!";
-          status.style.color = "#d9534f";
-        }
-      });
-    }
+    status.textContent = "Registering...";
+    status.style.color = "#555";
 
-    function handlePlayerSignup() {
-      const name = document.getElementById("pSignName").value.trim();
-      const discord = document.getElementById("pSignDiscord").value.trim();
-      const ign = document.getElementById("pSignIgn").value.trim();
-      const pass = document.getElementById("pSignPass").value.trim();
-      const status = document.getElementById("playerStatus");
-
-      status.textContent = "Registering...";
-      status.style.color = "#555";
-
-      sendReq(PLAYER_API, { action: "player_signup", name: name, discord: discord, ign: ign, password: pass }, (res) => {
-        if (res === "DUPLICATE_ERROR") {
-          status.textContent = "IGN already registered!";
-          status.style.color = "#d9534f";
-        } else if (res === "REGISTRATION_SUCCESS") {
-          status.textContent = "Success! Redirecting to login...";
-          status.style.color = "var(--primary)";
-          setTimeout(() => togglePlayerAuth(), 1200);
-        }
-      });
-    }
-
-    function openPlayerDashboard() {
-      document.getElementById("playerAuthCard").style.display = "none";
-      document.getElementById("playerDashboardCard").style.display = "block";
-      
-      const fetchStatus = document.getElementById("playerFetchStatus");
-      const profileBox = document.getElementById("playerProfileContent");
-      fetchStatus.textContent = "Loading your profile...";
-      fetchStatus.style.color = "#555";
-      profileBox.style.display = "none";
-
-      sendReq(PLAYER_API, { action: "get_player_info", ign: currentUserIgn }, (res) => {
-        try {
-          const data = JSON.parse(res);
-          if (data.error) {
-            fetchStatus.textContent = "Profile information not found.";
-            fetchStatus.style.color = "#d9534f";
-            return;
-          }
-
-          fetchStatus.textContent = "";
-          let html = "";
-          for (let key in data) {
-            if (key.toLowerCase() !== "password") { // Hide password field
-              html += `
-                <div class="info-row">
-                  <span class="info-label">${key}</span>
-                  <span class="info-value">${data[key]}</span>
-                </div>`;
-            }
-          }
-          profileBox.innerHTML = html;
-          profileBox.style.display = "block";
-        } catch (e) {
-          fetchStatus.textContent = "Error parsing profile data.";
-          fetchStatus.style.color = "#d9534f";
-        }
-      });
-    }
-
-    // --- ADMIN AUTH & VIEWS ---
-    function handleAdminLogin() {
-      const ign = document.getElementById("aLoginIgn").value.trim();
-      const pass = document.getElementById("aLoginPass").value.trim();
-      const status = document.getElementById("adminStatus");
-
-      status.textContent = "Authenticating Admin...";
-      status.style.color = "#555";
-
-      sendReq(ADMIN_API, { action: "admin_login", ign: ign, password: pass }, (res) => {
-        if (res === "LOGIN_SUCCESS") {
-          document.getElementById("adminAuthCard").style.display = "none";
-          document.getElementById("adminDashboardCard").style.display = "block";
-          resetAdminView();
-        } else {
-          status.textContent = "Access Denied!";
-          status.style.color = "#d9534f";
-        }
-      });
-    }
-
-    function resetAdminView() {
-      document.getElementById("adminMenu").style.display = "flex";
-      document.getElementById("adminViewContainer").style.display = "none";
-      document.getElementById("adminLogoutBtn").style.display = "block";
-    }
-
-    function loadAdminView(viewType) {
-      document.getElementById("adminMenu").style.display = "none";
-      document.getElementById("adminLogoutBtn").style.display = "none";
-      
-      const container = document.getElementById("adminViewContainer");
-      const title = document.getElementById("adminViewTitle");
-      const content = document.getElementById("adminDataContent");
-      
-      container.style.display = "block";
-      content.textContent = "Loading data...";
-
-      if (viewType === "players") {
-        title.textContent = "List of All Players";
-        sendReq(ADMIN_API, { action: "get_all_players" }, (res) => {
-          renderTableData(content, res);
-        });
-      } else if (viewType === "payments") {
-        title.textContent = "Payments Overview";
-        sendReq(ADMIN_API, { action: "get_all_payments" }, (res) => {
-          renderTableData(content, res);
-        });
+    sendReq(PLAYER_API, { action: "player_signup", name: name, discord: discord, ign: ign, password: pass }, (res) => {
+      console.log("Player Signup Response:", res);
+      if (res === "DUPLICATE_ERROR") {
+        status.textContent = "IGN already registered!";
+        status.style.color = "#d9534f";
+      } else if (res === "REGISTRATION_SUCCESS") {
+        status.textContent = "Success! Redirecting to login...";
+        status.style.color = "var(--primary)";
+        setTimeout(() => togglePlayerAuth(), 1200);
+      } else {
+        status.textContent = "Signup Failed: " + res;
+        status.style.color = "#d9534f";
       }
-    }
+    });
+  }
 
-    function renderTableData(element, jsonResponse) {
+  function openPlayerDashboard() {
+    document.getElementById("playerAuthCard").style.display = "none";
+    document.getElementById("playerDashboardCard").style.display = "block";
+    
+    const fetchStatus = document.getElementById("playerFetchStatus");
+    const profileBox = document.getElementById("playerProfileContent");
+    fetchStatus.textContent = "Loading your profile...";
+    fetchStatus.style.color = "#555";
+    profileBox.style.display = "none";
+
+    sendReq(PLAYER_API, { action: "get_player_info", ign: currentUserIgn }, (res) => {
+      console.log("Get Player Info Response:", res);
       try {
-        const list = JSON.parse(jsonResponse);
-        if (!Array.isArray(list) || list.length === 0) {
-          element.textContent = "No records found.";
+        const data = JSON.parse(res);
+        if (data.error) {
+          fetchStatus.textContent = "Profile information not found.";
+          fetchStatus.style.color = "#d9534f";
           return;
         }
 
+        fetchStatus.textContent = "";
         let html = "";
-        list.forEach((item, index) => {
-          html += `<div style="margin-bottom:8px; font-weight:bold; color: var(--secondary);">Record #${index + 1}</div>`;
-          for (let k in item) {
-            if (k.toLowerCase() !== "password") {
-              html += `
-                <div class="info-row">
-                  <span class="info-label">${k}</span>
-                  <span class="info-value">${item[k]}</span>
-                </div>`;
-            }
+        for (let key in data) {
+          if (key.toLowerCase() !== "password") {
+            html += `
+              <div class="info-row">
+                <span class="info-label">${key}</span>
+                <span class="info-value">${data[key]}</span>
+              </div>`;
           }
-          html += `<hr style="border:0; border-top:1px dashed #ccc; margin:12px 0;">`;
-        });
-        element.innerHTML = html;
+        }
+        profileBox.innerHTML = html;
+        profileBox.style.display = "block";
       } catch (e) {
-        element.textContent = "Error rendering response data.";
+        fetchStatus.textContent = "Error parsing profile data: " + res;
+        fetchStatus.style.color = "#d9534f";
       }
-    }
+    });
+  }
 
-    // --- UTILS ---
-    function sendReq(targetUrl, params, callback) {
-      const payload = new URLSearchParams();
-      for (let key in params) payload.append(key, params[key]);
+  // --- ADMIN AUTH & VIEWS ---
+  function handleAdminLogin() {
+    const ign = document.getElementById("aLoginIgn").value.trim();
+    const pass = document.getElementById("aLoginPass").value.trim();
+    const status = document.getElementById("adminStatus");
 
-      fetch(targetUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: payload
-      })
-      .then(r => r.text())
-      .then(txt => callback(txt.trim()))
-      .catch(err => console.error(err));
-    }
+    status.textContent = "Authenticating Admin...";
+    status.style.color = "#555";
 
-    function clearAllInputs() {
-      document.querySelectorAll("input").forEach(i => i.value = "");
+    sendReq(ADMIN_API, { action: "admin_login", ign: ign, password: pass }, (res) => {
+      console.log("Admin Login Response:", res);
+      if (res === "LOGIN_SUCCESS") {
+        document.getElementById("adminAuthCard").style.display = "none";
+        document.getElementById("adminDashboardCard").style.display = "block";
+        resetAdminView();
+      } else {
+        status.textContent = "Access Denied! Server sent: " + (res || "No Response");
+        status.style.color = "#d9534f";
+      }
+    });
+  }
+
+  function resetAdminView() {
+    document.getElementById("adminMenu").style.display = "flex";
+    document.getElementById("adminViewContainer").style.display = "none";
+    document.getElementById("adminLogoutBtn").style.display = "block";
+  }
+
+  function loadAdminView(viewType) {
+    document.getElementById("adminMenu").style.display = "none";
+    document.getElementById("adminLogoutBtn").style.display = "none";
+    
+    const container = document.getElementById("adminViewContainer");
+    const title = document.getElementById("adminViewTitle");
+    const content = document.getElementById("adminDataContent");
+    
+    container.style.display = "block";
+    content.textContent = "Loading data...";
+
+    if (viewType === "players") {
+      title.textContent = "List of All Players";
+      sendReq(ADMIN_API, { action: "get_all_players" }, (res) => {
+        renderTableData(content, res);
+      });
+    } else if (viewType === "payments") {
+      title.textContent = "Payments Overview";
+      sendReq(ADMIN_API, { action: "get_all_payments" }, (res) => {
+        renderTableData(content, res);
+      });
     }
-  </script>
+  }
+
+  function renderTableData(element, jsonResponse) {
+    try {
+      const list = JSON.parse(jsonResponse);
+      if (!Array.isArray(list) || list.length === 0) {
+        element.textContent = "No records found.";
+        return;
+      }
+
+      let html = "";
+      list.forEach((item, index) => {
+        html += `<div style="margin-bottom:8px; font-weight:bold; color: var(--secondary);">Record #${index + 1}</div>`;
+        for (let k in item) {
+          if (k.toLowerCase() !== "password") {
+            html += `
+              <div class="info-row">
+                <span class="info-label">${k}</span>
+                <span class="info-value">${item[k]}</span>
+              </div>`;
+          }
+        }
+        html += `<hr style="border:0; border-top:1px dashed #ccc; margin:12px 0;">`;
+      });
+      element.innerHTML = html;
+    } catch (e) {
+      element.textContent = "Error rendering data: " + jsonResponse;
+    }
+  }
+
+  // --- UTILS ---
+  function sendReq(targetUrl, params, callback) {
+    const payload = new URLSearchParams();
+    for (let key in params) payload.append(key, params[key]);
+
+    fetch(targetUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: payload
+    })
+    .then(r => r.text())
+    .then(txt => callback(txt.trim()))
+    .catch(err => {
+      console.error("Network/Fetch Error:", err);
+      callback("NETWORK_ERROR");
+    });
+  }
+
+  function clearAllInputs() {
+    document.querySelectorAll("input").forEach(i => i.value = "");
+  }
+</script>
+  
+  
+ 
 </body>
 </html>
