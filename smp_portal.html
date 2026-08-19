@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SERAPHYX PORTAL</title>
+  <title>User Registration</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,7 +14,6 @@
       min-height: 100vh;
     }
 
-    /* Centered poem-like card */
     .card {
       background: #ffffff;
       padding: 35px 30px;
@@ -76,34 +75,33 @@
 </head>
 <body>
 
-  <!-- 1. STEP ONE: PIN SCREEN ONLY -->
+  <!-- STEP 1: PIN SCREEN -->
   <div class="card" id="pinCard">
     <h2>Enter Access PIN</h2>
     <input type="password" id="pinInput" placeholder="Enter PIN">
-    <button onclick="checkPin()">Access</button>
+    <button onclick="checkPin()">Unlock</button>
     <p id="pinStatus"></p>
   </div>
 
-  <!-- 2. STEP TWO: REGISTRATION FORM (Hidden completely by default) -->
+  <!-- STEP 2: REGISTRATION FORM -->
   <div class="card" id="regCard" style="display: none;">
-    <h2>SERAPHYX PORTAL</h2>
+    <h2>User Registration</h2>
     
     <input type="text" id="nameInput" placeholder="Enter Name">
     <input type="text" id="rankInput" placeholder="Enter Rank">
     <input type="number" id="balInput" placeholder="Enter Balance">
     
-    <button onclick="sendData()">Submit</button>
+    <button onclick="sendData()">Send to Sheet</button>
 
     <p id="status"></p>
   </div>
 
   <script>
     // PASTE YOUR GOOGLE WEB APP URL HERE
-    const API_URL = "https://script.google.com/macros/s/AKfycbyfcOzWMtYrgSx-FLNhDbb0lwF5Cl15JGy8fNsHRctjKN1bHv-r02ONPHX6dQATA9E/exec";
+    const API_URL = "YOUR_GOOGLE_WEB_APP_URL_HERE";
     
     let verifiedPin = "";
 
-    // 1. VERIFY PIN WITH GOOGLE
     function checkPin() {
       const pinInput = document.getElementById("pinInput");
       const pinStatus = document.getElementById("pinStatus");
@@ -130,8 +128,6 @@
       .then(result => {
         if (result === "PIN_VALID") {
           verifiedPin = enteredPin;
-          
-          // Hide PIN card completely and show registration card
           document.getElementById("pinCard").style.display = "none";
           document.getElementById("regCard").style.display = "block";
         } else {
@@ -147,7 +143,6 @@
       });
     }
 
-    // 2. SUBMIT FORM DATA
     function sendData() {
       const nameInput = document.getElementById("nameInput");
       const rankInput = document.getElementById("rankInput");
@@ -181,14 +176,16 @@
       })
       .then(res => res.text())
       .then(result => {
-        if (result === "DUPLICATE") {
-          statusText.textContent = "Error: Name already registered!";
-          statusText.style.color = "red";
+        if (result === "UPDATED") {
+          statusText.textContent = "Renewal Success! Extended in Column F.";
+          statusText.style.color = "green";
+          nameInput.value = "";
+          rankInput.value = "";
+          balInput.value = "";
         } 
         else if (result === "SUCCESS") {
-          statusText.textContent = "Success! Saved to Sheet.";
+          statusText.textContent = "Success! New member registered.";
           statusText.style.color = "green";
-          
           nameInput.value = "";
           rankInput.value = "";
           balInput.value = "";
