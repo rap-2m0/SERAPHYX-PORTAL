@@ -33,7 +33,6 @@
       color: var(--text-color);
     }
 
-    /* Mobile-optimized card layout */
     .card {
       background: var(--card-bg);
       padding: 30px 20px;
@@ -51,14 +50,12 @@
       font-weight: 700;
     }
 
-    /* Form accessibility & mobile input sizing */
     form {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
-    /* 16px font size prevents iOS safari from auto-zooming on focus */
     input, button {
       width: 100%;
       min-height: 48px;
@@ -138,7 +135,6 @@
       margin-bottom: 20px;
     }
 
-    /* High contrast focus rings for accessibility navigation */
     input:focus-visible, button:focus-visible, .toggle-link:focus-visible {
       outline: 2px solid var(--secondary-color);
       outline-offset: 2px;
@@ -152,17 +148,17 @@
     <h2 id="authTitle">Portal Login</h2>
 
     <!-- LOGIN FORM -->
-    <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
-      <input type="text" id="loginIgn" placeholder="In Game Name" autocomplete="username" required>
-      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password" required>
+    <form id="loginForm" autocomplete="off" onsubmit="event.preventDefault(); handleLogin();">
+      <input type="text" id="loginIgn" placeholder="In Game Name" autocomplete="off" required>
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="new-password" required>
       <button type="submit">Login</button>
     </form>
 
     <!-- SIGN UP FORM (Hidden by default) -->
-    <form id="signupForm" style="display: none;" onsubmit="event.preventDefault(); handleSignup();">
-      <input type="text" id="signupName" placeholder="Name" autocomplete="name" required>
-      <input type="text" id="signupDiscord" placeholder="Discord Name" required>
-      <input type="text" id="signupIgn" placeholder="In Game Name" autocomplete="username" required>
+    <form id="signupForm" style="display: none;" autocomplete="off" onsubmit="event.preventDefault(); handleSignup();">
+      <input type="text" id="signupName" placeholder="Name" autocomplete="off" required>
+      <input type="text" id="signupDiscord" placeholder="Discord Name" autocomplete="off" required>
+      <input type="text" id="signupIgn" placeholder="In Game Name" autocomplete="off" required>
       <input type="password" id="signupPass" placeholder="Password" autocomplete="new-password" required>
       <button type="submit">Sign Up</button>
     </form>
@@ -188,10 +184,10 @@
   <main class="card" id="paymentCard" style="display: none;">
     <h2>Process Payment</h2>
     
-    <form onsubmit="event.preventDefault(); submitPayment();">
-      <input type="text" id="targetIgn" placeholder="Target In Game Name" required>
+    <form autocomplete="off" onsubmit="event.preventDefault(); submitPayment();">
+      <input type="text" id="targetIgn" placeholder="Target In Game Name" autocomplete="off" required>
       <input type="number" id="payAmount" placeholder="Payment Amount" step="any" required>
-      <input type="text" id="payRank" placeholder="Rank (Optional)">
+      <input type="text" id="payRank" placeholder="Rank (Optional)" autocomplete="off">
       
       <button type="submit">Submit Payment</button>
       <button type="button" class="btn-back" onclick="showDashboard()">Back</button>
@@ -201,11 +197,16 @@
   </main>
 
   <script>
-    // Paste your Google Web App URL here
     const API_URL = "https://script.google.com/macros/s/AKfycbzFCxfKWZGBtCwsa0jTaVc3Mua-9MABi7_Lh99l5MJBMpDEVw8mNN1jF2gHgpzheV8f/exec";
 
-    let currentAuthMode = "login"; // "login" OR "signup"
+    let currentAuthMode = "login";
     let loggedInIgn = "";
+
+    // Clear all forms immediately when the page loads
+    window.addEventListener("DOMContentLoaded", () => {
+      clearAuthInputs();
+      clearPaymentInputs();
+    });
 
     // 1. TOGGLE BETWEEN LOGIN AND SIGN UP
     function toggleAuthMode() {
@@ -216,6 +217,7 @@
       const status = document.getElementById("authStatus");
 
       status.textContent = "";
+      clearAuthInputs(); // Force wipe inputs on mode switch
 
       if (currentAuthMode === "login") {
         currentAuthMode = "signup";
@@ -243,18 +245,19 @@
       status.textContent = "Authenticating...";
       status.style.color = "#555";
 
-      const formData = new FormData();
-      formData.append("action", "login");
-      formData.append("ign", ign);
-      formData.append("password", pass);
+      const payload = new URLSearchParams();
+      payload.append("action", "login");
+      payload.append("ign", ign);
+      payload.append("password", pass);
 
       fetch(API_URL, {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: payload
       })
       .then(res => res.text())
       .then(result => {
-        if (result === "LOGIN_SUCCESS") {
+        if (result.trim() === "LOGIN_SUCCESS") {
           loggedInIgn = ign;
           document.getElementById("welcomeMsg").textContent = `Welcome, ${loggedInIgn}!`;
           document.getElementById("authCard").style.display = "none";
@@ -285,27 +288,34 @@
       status.textContent = "Creating account...";
       status.style.color = "#555";
 
-      const formData = new FormData();
-      formData.append("action", "register_user");
-      formData.append("name", name);
-      formData.append("discord", discord);
-      formData.append("ign", ign);
-      formData.append("password", pass);
+      const payload = new URLSearchParams();
+      payload.append("action", "register_user");
+      payload.append("name", name);
+      payload.append("discord", discord);
+      payload.append("ign", ign);
+      payload.append("password", pass);
 
       fetch(API_URL, {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: payload
       })
       .then(res => res.text())
       .then(result => {
-        if (result === "DUPLICATE_ERROR") {
+        if (result.trim() === "DUPLICATE_ERROR") {
           status.textContent = "In Game Name already registered!";
           status.style.color = "#d9534f";
-        } else if (result === "REGISTRATION_SUCCESS") {
+        } else if (result.trim() === "REGISTRATION_SUCCESS") {
           status.textContent = "Account created! Redirecting to login...";
           status.style.color = "var(--primary-color)";
+          
+          // Clear inputs completely before switching to login
           clearAuthInputs();
-          setTimeout(() => toggleAuthMode(), 1200);
+
+          setTimeout(() => {
+            toggleAuthMode();
+            clearAuthInputs(); // Secondary clear after mode switch
+          }, 1200);
         } else {
           status.textContent = "Registration failed. Try again.";
           status.style.color = "#d9534f";
@@ -318,7 +328,7 @@
       });
     }
 
-    // 4. SCREEN NAVIGATION
+    // 4. NAVIGATION
     function openPaymentForm() {
       document.getElementById("menuCard").style.display = "none";
       document.getElementById("paymentCard").style.display = "block";
@@ -351,22 +361,23 @@
       status.textContent = "Processing payment...";
       status.style.color = "#555";
 
-      const formData = new FormData();
-      formData.append("action", "process_payment");
-      formData.append("ign", targetIgn);
-      formData.append("bal", amount);
-      formData.append("rank", rank);
+      const payload = new URLSearchParams();
+      payload.append("action", "process_payment");
+      payload.append("ign", targetIgn);
+      payload.append("bal", amount);
+      payload.append("rank", rank);
 
       fetch(API_URL, {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: payload
       })
       .then(res => res.text())
       .then(result => {
-        if (result === "USER_NOT_FOUND") {
+        if (result.trim() === "USER_NOT_FOUND") {
           status.textContent = "Target In Game Name not found!";
           status.style.color = "#d9534f";
-        } else if (result === "PAYMENT_SUCCESS") {
+        } else if (result.trim() === "PAYMENT_SUCCESS") {
           status.textContent = "Payment processed & expiration extended!";
           status.style.color = "var(--primary-color)";
           clearPaymentInputs();
@@ -384,18 +395,25 @@
 
     // CLEAR HELPERS
     function clearAuthInputs() {
-      document.getElementById("loginIgn").value = "";
-      document.getElementById("loginPass").value = "";
-      document.getElementById("signupName").value = "";
-      document.getElementById("signupDiscord").value = "";
-      document.getElementById("signupIgn").value = "";
-      document.getElementById("signupPass").value = "";
+      const ids = ["loginIgn", "loginPass", "signupName", "signupDiscord", "signupIgn", "signupPass"];
+      ids.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+          input.value = "";
+          input.setAttribute("value", "");
+        }
+      });
     }
 
     function clearPaymentInputs() {
-      document.getElementById("targetIgn").value = "";
-      document.getElementById("payAmount").value = "";
-      document.getElementById("payRank").value = "";
+      const ids = ["targetIgn", "payAmount", "payRank"];
+      ids.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+          input.value = "";
+          input.setAttribute("value", "");
+        }
+      });
     }
   </script>
 
